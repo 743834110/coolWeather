@@ -2,6 +2,8 @@ package com.example.coolweather.android.dto;
 
 import org.litepal.crud.DataSupport;
 
+import java.util.List;
+
 /**
  * Created by angel beat on 2017/8/6.
  */
@@ -10,7 +12,7 @@ public class City extends DataSupport{
 
     private int id;
     private String cityName;
-    private String cityCode;
+    private int cityCode;
     private int provinceCode;
 
     public int getProvinceCode() {
@@ -37,11 +39,28 @@ public class City extends DataSupport{
         this.cityName = cityName;
     }
 
-    public String getCityCode() {
+    public int getCityCode() {
         return cityCode;
     }
 
-    public void setCityCode(String cityCode) {
+    public void setCityCode(int cityCode) {
         this.cityCode = cityCode;
+    }
+    public City getCityByCode(int code){
+        City city = null;
+        List<City> lists = DataSupport.where("cityCode = ?",code+"").find(City.class);
+        for (City element:lists){
+            element.delete();
+            city = element;
+        }
+        return city;
+    }
+    public boolean save(){
+        City city = this.getCityByCode(this.getCityCode());
+        if (city == null)
+            return super.save();
+        this.setId(city.getId());
+        return super.save();
+
     }
 }

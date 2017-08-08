@@ -1,4 +1,4 @@
-<litepal>
+<litePal>
     <dbname value = "coolWeather"/>
     <version value = "1"/>
     <list>
@@ -6,4 +6,4 @@
         <mapping class = "com.example.coolweather.android.dto.County"/>
         <mapping class = "com.example.coolweather.android.dto.City"/>
     </list>
-</litepal>
+</litePal>

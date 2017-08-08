@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">coolWeather</string>
+
+    <string name="init_url">http://guolin.tech/api/china</string>
 </resources>
