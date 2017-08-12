@@ -2,4 +2,8 @@
     <string name="app_name">coolWeather</string>
 
     <string name="init_url">http://guolin.tech/api/china</string>
+    <string name = "weather_url">https://free-api.heweather.com/v5/weather?city=%s&amp;key=b22d74e125bb4f5eb176d6e6a15d2b1d</string>
+    <string name = "weather_id">weather_id</string>
+    <string name = "weather_image_id">weather_image_id</string>
+    <string name = "weather_image_url">http://guolin.tech/api/bing_pic</string>
 </resources>

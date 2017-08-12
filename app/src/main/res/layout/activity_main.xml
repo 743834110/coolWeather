@@ -7,7 +7,8 @@
         android:id="@+id/fffef"
         android:name="com.example.coolweather.android.Fragment.LocationFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        tools:layout="@layout/fragment_location">
     </fragment>
 
 </FrameLayout>

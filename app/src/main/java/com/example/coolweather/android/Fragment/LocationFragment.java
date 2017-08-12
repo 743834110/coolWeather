@@ -1,39 +1,36 @@
 package com.example.coolweather.android.Fragment;
 
-import android.app.AlarmManager;
 import android.app.ProgressDialog;
-import android.content.Context;
-import android.net.Uri;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.coolweather.android.CoolWeatherApplication;
 import com.example.coolweather.android.R;
-import com.example.coolweather.android.dto.City;
-import com.example.coolweather.android.dto.County;
-import com.example.coolweather.android.dto.Province;
-import com.example.coolweather.android.json.IParseJSON;
-import com.example.coolweather.android.json.ParseJSONFactory;
+import com.example.coolweather.android.activity.WeatherActivity;
+import com.example.coolweather.android.dto.DatabaseDto.City;
+import com.example.coolweather.android.dto.DatabaseDto.County;
+import com.example.coolweather.android.dto.DatabaseDto.Province;
+import com.example.coolweather.android.dto.gsonDto.Weather;
+import com.example.coolweather.android.json.IParse;
+import com.example.coolweather.android.json.ParseFactory;
 import com.example.coolweather.android.json.ParseWithCityJSON;
 import com.example.coolweather.android.json.ParseWithCountyJSON;
 import com.example.coolweather.android.json.ParseWithProvinceJSON;
 import com.example.coolweather.android.util.HttpUtil;
+import com.example.coolweather.android.util.SaveUtil;
 
 import org.litepal.crud.DataSupport;
 
@@ -42,8 +39,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Response;
 
 public class LocationFragment extends Fragment {
@@ -57,6 +52,7 @@ public class LocationFragment extends Fragment {
     public final static int PROVINCE = 1;
     public final static int CITY = 2;
     public final static int COUNTY = 3;
+    public final static int WEATHER = 4;
 
     private List<String> data = new ArrayList<String>();
 
@@ -95,12 +91,21 @@ public class LocationFragment extends Fragment {
                             progressDialog.dismiss();
                             imageView.setClickable(true);
                             imageView.setVisibility(View.VISIBLE);
-                            listView.setClickable(false);
+                            listView.setClickable(true);
                             data.clear();
                             for (County element:(List<County>)msg.obj){
                                 data.add(element.getCountyName());
                             }
                             arrayAdapter.notifyDataSetChanged();
+                            break;
+                        case WEATHER:
+                            //切换到另一个页面
+                            progressDialog.dismiss();
+                            Intent intent = new Intent(LocationFragment.this.getContext(), WeatherActivity.class);
+                            //传不传都无所谓
+                            intent.putExtra(LocationFragment.this.getString(R.string.weather_id),(String)msg.obj);
+                            LocationFragment.this.startActivity(intent);
+                            LocationFragment.this.getActivity().finish();
                             break;
                         //0代表要进行加载数据处理：展开进度栏
                         case 0:
@@ -188,6 +193,7 @@ abstract class AbstractLoadDataStatus{
     public abstract void loadCounty();
     public abstract void parseData(String data);
     public abstract void errorBack();
+    public abstract void loadWeather();
     public void queryFromServer(String url){
 
         try {
@@ -237,8 +243,8 @@ class LoadProvinceStatus extends AbstractLoadDataStatus{
 
     @Override
     public void parseData(String data) {
-        IParseJSON iParseJSON = ParseJSONFactory.newInstance(ParseWithProvinceJSON.class);
-        iParseJSON.execute(data,0);
+        IParse iParse = ParseFactory.newInstance(ParseWithProvinceJSON.class);
+        iParse.execute(data,0);
         this.loadProvince();
 
     }
@@ -246,6 +252,11 @@ class LoadProvinceStatus extends AbstractLoadDataStatus{
     @Override
     public void errorBack() {
         this.getContext().loadProvince();
+    }
+
+    @Override
+    public void loadWeather() {
+
     }
 }
 //加载城市数据的状态
@@ -285,9 +296,9 @@ class LoadCityStatus extends AbstractLoadDataStatus{
 
     @Override
     public void parseData(String data) {
-        IParseJSON iParseJSON = ParseJSONFactory.newInstance(ParseWithCityJSON.class);
+        IParse iParse = ParseFactory.newInstance(ParseWithCityJSON.class);
         LoadDataContext context = this.getContext();
-        iParseJSON.execute(data,context.province.getProvinceCode());
+        iParse.execute(data,context.province.getProvinceCode());
         this.loadCity();
     }
 
@@ -295,6 +306,11 @@ class LoadCityStatus extends AbstractLoadDataStatus{
     public void errorBack() {
 
         this.getContext().removeCurrentStatus().getContext().loadProvince();
+    }
+
+    @Override
+    public void loadWeather() {
+
     }
 }
 //加载县区数据的状态
@@ -331,15 +347,69 @@ class LoadCountyStatus extends  AbstractLoadDataStatus{
 
     @Override
     public void parseData(String data) {
-        IParseJSON iParseJSON = ParseJSONFactory.newInstance(ParseWithCountyJSON.class);
+        IParse iParse = ParseFactory.newInstance(ParseWithCountyJSON.class);
         LoadDataContext context = this.getContext();
-        iParseJSON.execute(data,context.city.getCityCode());
+        iParse.execute(data,context.city.getCityCode());
         this.loadCounty();
     }
 
     @Override
     public void errorBack() {
         this.getContext().removeCurrentStatus().getContext().loadCity();
+    }
+
+    @Override
+    public void loadWeather() {
+
+    }
+}
+//读取天气信息的状态
+class LoadWeatherStatus extends AbstractLoadDataStatus{
+
+    @Override
+    public void loadProvince() {
+
+    }
+
+    @Override
+    public void loadCity() {
+
+    }
+
+    @Override
+    public void loadCounty() {
+
+    }
+
+    @Override
+    public void parseData(String data) {
+        //将得来的天气数据保存:用的是键R.string.weather_id;
+        LoadDataContext context = this.getContext();
+        SaveUtil.saveDataInSharedPreferences(CoolWeatherApplication.context.getString(R.string.weather_id),data);
+        Message message = new Message();
+        message.what = LocationFragment.WEATHER;
+        message.obj = context.county.getWeatherID();
+        context.getHandler().handleMessage(message);
+
+
+    }
+
+    @Override
+    public void errorBack() {
+        LoadDataContext context = this.getContext();
+        context.removeCurrentStatus().getContext().loadCounty();
+    }
+
+    @Override
+    public void loadWeather() {
+        //暂时去获取天气状况
+        LoadDataContext context = this.getContext();
+        context.county = context.counties.get(context.getPosition());
+
+        String url = CoolWeatherApplication.context.getString(R.string.weather_url);
+        this.queryFromServer(String.format(url, context.county.getWeatherID()));
+        context.loadWeather();
+
     }
 }
 //状态模式
@@ -349,6 +419,8 @@ class LoadCountyStatus extends  AbstractLoadDataStatus{
     public final static LoadProvinceStatus loadProvinceStatus = new LoadProvinceStatus();
     public final static LoadCityStatus loadCityStatus = new LoadCityStatus();
     public final static LoadCountyStatus loadCountyStatus = new LoadCountyStatus();
+    public final static LoadWeatherStatus loadWeatherStatus = new LoadWeatherStatus();
+
     private  LinkedList<AbstractLoadDataStatus> historyStatus = new LinkedList<AbstractLoadDataStatus>();
     private AbstractLoadDataStatus currentStatus = null;
     private int orientation ;
@@ -361,6 +433,7 @@ class LoadCountyStatus extends  AbstractLoadDataStatus{
     public City city = null;
     public Province province = null;
     public County county = null;
+    public Weather weather = null;
 
     public LoadDataContext(AbstractLoadDataStatus _currentStatus,Handler _handler){
         this.currentStatus = _currentStatus;
@@ -442,13 +515,19 @@ class LoadCountyStatus extends  AbstractLoadDataStatus{
     public void loadCounty(){
         this.setBlock();
         if (this.orientation == NEXT) {
-//            this.currentStatus.loadCounty();
+            this.sendMessage();
+            this.changeStatus(LoadDataContext.loadWeatherStatus);
+            this.currentStatus.loadWeather();
         }
         else{
 //            this.currentStatus = this.lastStatus;
             this.currentStatus = this.historyStatus.removeLast();
             this.currentStatus.loadCity();
         }
+    }
+    public void loadWeather(){
+        //读取完weather信息类后将来要做的事。
+
     }
     public void  execute(){
         new Thread(new Runnable() {

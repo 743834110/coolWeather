@@ -1,4 +1,4 @@
-package com.example.coolweather.android.dto;
+package com.example.coolweather.android.dto.DatabaseDto;
 
 import org.litepal.crud.DataSupport;
 

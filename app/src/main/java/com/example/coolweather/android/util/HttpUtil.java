@@ -25,7 +25,7 @@ public class HttpUtil {
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url(url).build();
         response = client.newCall(request).execute();
-
         return response;
     }
+
 }

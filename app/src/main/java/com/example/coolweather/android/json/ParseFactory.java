@@ -1,23 +1,15 @@
 package com.example.coolweather.android.json;
 
-import com.example.coolweather.android.util.HttpUtil;
-
-import java.io.IOException;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
-
 /**
  * Created by angel beat on 2017/8/7.
  */
 
-public class ParseJSONFactory {
+public class ParseFactory {
 
-    public static <T extends IParseJSON> T newInstance ( Class<T> cls){
-        IParseJSON instance = null;
+    public static <T extends IParse> T newInstance (Class<T> cls){
+        IParse instance = null;
         try {
-            instance = (IParseJSON) java.lang.Class.forName(cls.getName()).newInstance();
+            instance = (IParse) java.lang.Class.forName(cls.getName()).newInstance();
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -36,7 +28,7 @@ public class ParseJSONFactory {
 //
 //            @Override
 //            public void onResponse(Call call, Response response) throws IOException {
-//                ParseWithProvinceJSON parser = ParseJSONFactory.newInstance(ParseWithProvinceJSON.class);
+//                ParseWithProvinceJSON parser = ParseFactory.newInstance(ParseWithProvinceJSON.class);
 //                parser.execute(response.body().string());
 //            }
 //        });
