@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">coolWeather</string>
+    <string name="app_name">酷欧天气</string>
 
     <string name="init_url">http://guolin.tech/api/china</string>
     <string name = "weather_url">https://free-api.heweather.com/v5/weather?city=%s&amp;key=b22d74e125bb4f5eb176d6e6a15d2b1d</string>
