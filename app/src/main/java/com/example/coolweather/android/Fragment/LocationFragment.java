@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.example.coolweather.android.CoolWeatherApplication;
 import com.example.coolweather.android.R;
+import com.example.coolweather.android.activity.MainActivity;
 import com.example.coolweather.android.activity.WeatherActivity;
 import com.example.coolweather.android.dto.DatabaseDto.City;
 import com.example.coolweather.android.dto.DatabaseDto.County;
@@ -101,11 +102,18 @@ public class LocationFragment extends Fragment {
                         case WEATHER:
                             //切换到另一个页面
                             progressDialog.dismiss();
-                            Intent intent = new Intent(LocationFragment.this.getContext(), WeatherActivity.class);
-                            //传不传都无所谓
-                            intent.putExtra(LocationFragment.this.getString(R.string.weather_id),(String)msg.obj);
-                            LocationFragment.this.startActivity(intent);
-                            LocationFragment.this.getActivity().finish();
+                            if (LocationFragment.this.getActivity() instanceof MainActivity) {
+                                Intent intent = new Intent(LocationFragment.this.getContext(), WeatherActivity.class);
+                                //传不传都无所谓
+                                intent.putExtra(LocationFragment.this.getString(R.string.weather_id), (String) msg.obj);
+                                LocationFragment.this.startActivity(intent);
+                                LocationFragment.this.getActivity().finish();
+                            }
+                            else{
+                                WeatherActivity activity = (WeatherActivity) LocationFragment.this.getActivity();
+                                activity.initData();
+                                activity.drawerLayout.closeDrawers();
+                            }
                             break;
                         //0代表要进行加载数据处理：展开进度栏
                         case 0:
