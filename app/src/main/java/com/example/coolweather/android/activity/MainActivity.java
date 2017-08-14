@@ -1,5 +1,6 @@
 package com.example.coolweather.android.activity;
 
+import android.app.AlarmManager;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.support.v7.app.AppCompatActivity;
@@ -19,5 +20,6 @@ public class MainActivity extends AppCompatActivity {
             this.startActivity(intent);
             this.finish();
         }
+        AlarmManager alarmManager = (AlarmManager) this.getSystemService(ALARM_SERVICE);
     }
 }

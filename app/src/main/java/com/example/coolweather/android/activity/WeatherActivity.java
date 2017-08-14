@@ -1,6 +1,7 @@
 package com.example.coolweather.android.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -29,6 +30,7 @@ import com.example.coolweather.android.dto.gsonDto.Weather;
 import com.example.coolweather.android.json.ParseFactory;
 import com.example.coolweather.android.json.ParseWithImageUrl;
 import com.example.coolweather.android.json.ParseWithWeatherJSON;
+import com.example.coolweather.android.service.AutoUpdateService;
 import com.example.coolweather.android.util.HttpUtil;
 import com.example.coolweather.android.util.SaveUtil;
 
@@ -80,8 +82,13 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
         this.drawerLayout = (DrawerLayout)this.findViewById(R.id.drawerLayout);
         this.initData();
         this.initImage(false);
+        this.startUpdateService();
     }
+    public void startUpdateService(){
 
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        this.startService(intent);
+    }
     public void initImage(final boolean isRefresh){
         new Thread(new Runnable() {
             @Override
